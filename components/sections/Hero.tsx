@@ -152,7 +152,7 @@ const Hero = () => {
         {mounted && (
           <div className="absolute inset-0 pointer-events-none">
             {images.map((image, index) => {
-              const position = getImagePosition(index, images.length);
+              const position = getImagePosition(index);
               return (
                 <div
                   key={image.id}
@@ -209,7 +209,7 @@ const Hero = () => {
 };
 
 // Helper function to generate balanced image positions
-const getImagePosition = (index: number, total: number) => {
+const getImagePosition = (index: number) => {
   const positions = [
     "top-[10%] left-[10%]",
     "bottom-[10%] left-[10%]",
