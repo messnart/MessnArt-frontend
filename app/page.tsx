@@ -1,9 +1,9 @@
-import Hero from "@/components/sections/Hero";
+import AnimatedGradientCircle from "@/components/AnimatedGradientCircle";
 
 export default function Home() {
   return (
     <div className="">
-      <Hero/>
+      <AnimatedGradientCircle/>
     </div>
   );
 }
