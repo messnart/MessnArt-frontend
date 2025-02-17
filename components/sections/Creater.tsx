@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
@@ -63,71 +63,95 @@ const slides = [
 export default function Creater() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const container = containerRef.current;
-    const slider = sliderRef.current;
-    
-    if (!container || !slider) return;
+    // Set loaded state after component mount
+    setIsLoaded(true);
+    let ctx = gsap.context(() => {});
 
     const setupAnimation = () => {
+      // Clear any existing ScrollTriggers
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-
-      // Modified to show one slide at a time
-      const slideWidth = window.innerWidth;
-      const totalWidth = slides.length * slideWidth;
       
-      slider.style.width = `${totalWidth}px`;
+      const container = containerRef.current;
+      const slider = sliderRef.current;
+      
+      if (!container || !slider) return;
 
-      const scrollDistance = totalWidth - window.innerWidth;
+      // Create a new GSAP context
+      ctx.kill(); // Kill previous context
+      ctx = gsap.context(() => {
+        const slideWidth = window.innerWidth;
+        const totalWidth = slides.length * slideWidth;
+        
+        slider.style.width = `${totalWidth}px`;
+        const scrollDistance = totalWidth - window.innerWidth;
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: container,
-          pin: true,
-          scrub: 1,
-          snap: {
-            snapTo: 1 / (slides.length - 1),
-            duration: { min: 0.2, max: 0.3 },
-            delay: 0,
-            ease: "power1.inOut"
-          },
-          end: `+=${scrollDistance}`,
-        },
-      });
+        // Set initial states
+        gsap.set(container, {
+          height: `${scrollDistance + window.innerHeight}px`,
+          clearProps: 'all' // Clear any previous GSAP properties
+        });
 
-      gsap.set(container, {
-        height: `${scrollDistance + window.innerHeight}px`
-      });
-
-      tl.to(slider, {
-        x: -scrollDistance,
-        ease: "none",
-      });
-
-      // Image scale animation
-      const images = gsap.utils.toArray<HTMLImageElement>(".slide-image");
-      images.forEach((image) => {
-        gsap.to(image, {
-          scale: 1.1,
+        const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: image.parentElement,
-            containerAnimation: tl,
-            start: "left center",
-            end: "right center",
-            scrub: true,
+            trigger: container,
+            pin: true,
+            pinSpacing: true,
+            scrub: 1,
+            invalidateOnRefresh: true, // Recalculate on refresh
+            snap: {
+              snapTo: 1 / (slides.length - 1),
+              duration: { min: 0.2, max: 0.3 },
+              delay: 0,
+              ease: "power1.inOut"
+            },
+            end: `+=${scrollDistance}`,
           },
         });
-      });
+
+        tl.to(slider, {
+          x: -scrollDistance,
+          ease: "none",
+        });
+
+        // Image scale animation
+        gsap.utils.toArray<HTMLImageElement>(".slide-image").forEach((image) => {
+          gsap.to(image, {
+            scale: 1.1,
+            scrollTrigger: {
+              trigger: image.parentElement,
+              containerAnimation: tl,
+              start: "left center",
+              end: "right center",
+              scrub: true,
+            },
+          });
+        });
+      }, containerRef); // Scope to container
     };
 
-    setupAnimation();
-    window.addEventListener("resize", setupAnimation);
+    // Setup animation after a short delay to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      setupAnimation();
+    }, 100);
+
+    // Handle resize
+    const debouncedResize = debounce(setupAnimation, 250);
+    window.addEventListener("resize", debouncedResize);
+
+    // Cleanup
     return () => {
-      window.removeEventListener("resize", setupAnimation);
+      clearTimeout(initTimeout);
+      window.removeEventListener("resize", debouncedResize);
+      ctx.kill(); // Kill GSAP context
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
-  }, []);
+  }, [isLoaded]);
+
+  // Don't render until component is loaded
+  if (!isLoaded) return null;
 
   return (
     <div className="overflow-hidden bg-transparent" ref={containerRef}>
@@ -176,4 +200,17 @@ export default function Creater() {
       </div>
     </div>
   );
+}
+
+// Debounce helper function
+function debounce(func: Function, wait: number) {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
 }
