@@ -131,6 +131,11 @@ export default function Creater() {
 
   return (
     <div className="overflow-hidden bg-transparent" ref={containerRef}>
+      <div className="text-center pt-4 pb-0.5">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+          Team & People we have collaborated with
+        </h1>
+      </div>
       <div
         ref={sliderRef}
         className="flex min-h-screen items-center"
@@ -148,10 +153,6 @@ export default function Creater() {
               <p className="text-lg md:text-xl text-gray-600 mb-8">
                 {slide.description}
               </p>
-              {/* <button className="group flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-base font-semibold text-white transition-all hover:bg-gray-800 hover:shadow-lg">
-                Learn More
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </button> */}
             </div>
 
             {/* Image on the right */}
@@ -161,6 +162,8 @@ export default function Creater() {
                 <Image
                   src={slide.image}
                   alt={slide.title}
+                  height={500}
+                  width={500}
                   className="slide-image h-full w-full object-cover rounded-2xl"
                 />
               </div>
