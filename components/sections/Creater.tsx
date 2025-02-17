@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
@@ -65,93 +65,102 @@ export default function Creater() {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    // Set loaded state after component mount
-    setIsLoaded(true);
-    let ctx = gsap.context(() => {});
+  // Replace useEffect with useLayoutEffect for DOM measurements
+  useLayoutEffect(() => {
+    // Wait for DOM to be ready
+    const initTimeout = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
 
+    return () => clearTimeout(initTimeout);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isLoaded) return;
+
+    let ctx = gsap.context(() => {});
+    
     const setupAnimation = () => {
-      // Clear any existing ScrollTriggers
+      // Kill existing animations
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      gsap.killTweensOf(sliderRef.current);
       
       const container = containerRef.current;
       const slider = sliderRef.current;
       
       if (!container || !slider) return;
 
-      // Create a new GSAP context
-      ctx.kill(); // Kill previous context
+      // Reset any previous inline styles
+      gsap.set([container, slider], { clearProps: "all" });
+
+      const slideWidth = window.innerWidth;
+      const totalWidth = slides.length * slideWidth;
+      
+      // Set initial dimensions
+      gsap.set(slider, {
+        width: totalWidth,
+        x: 0
+      });
+
+      const scrollDistance = totalWidth - window.innerWidth;
+
+      // Ensure container height is correct
+      gsap.set(container, {
+        height: scrollDistance + window.innerHeight
+      });
+
       ctx = gsap.context(() => {
-        const slideWidth = window.innerWidth;
-        const totalWidth = slides.length * slideWidth;
-        
-        slider.style.width = `${totalWidth}px`;
-        const scrollDistance = totalWidth - window.innerWidth;
-
-        // Set initial states
-        gsap.set(container, {
-          height: `${scrollDistance + window.innerHeight}px`,
-          clearProps: 'all' // Clear any previous GSAP properties
-        });
-
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: container,
+            start: "top top",
+            end: `+=${scrollDistance}`,
             pin: true,
-            pinSpacing: true,
+            anticipatePin: 1,
             scrub: 1,
-            invalidateOnRefresh: true, // Recalculate on refresh
+            invalidateOnRefresh: true,
             snap: {
               snapTo: 1 / (slides.length - 1),
               duration: { min: 0.2, max: 0.3 },
               delay: 0,
               ease: "power1.inOut"
-            },
-            end: `+=${scrollDistance}`,
-          },
+            }
+          }
         });
 
         tl.to(slider, {
           x: -scrollDistance,
-          ease: "none",
+          ease: "none"
         });
-
-        // Image scale animation
-        gsap.utils.toArray<HTMLImageElement>(".slide-image").forEach((image) => {
-          gsap.to(image, {
-            scale: 1.1,
-            scrollTrigger: {
-              trigger: image.parentElement,
-              containerAnimation: tl,
-              start: "left center",
-              end: "right center",
-              scrub: true,
-            },
-          });
-        });
-      }, containerRef); // Scope to container
+      }, container);
     };
 
-    // Setup animation after a short delay to ensure DOM is ready
-    const initTimeout = setTimeout(() => {
-      setupAnimation();
-    }, 100);
+    // Initial setup with a delay to ensure proper measurements
+    const initTimeout = setTimeout(setupAnimation, 500);
 
-    // Handle resize
-    const debouncedResize = debounce(setupAnimation, 250);
+    // Handle resize with debounce
+    const debouncedResize = debounce(() => {
+      setupAnimation();
+    }, 250);
+
     window.addEventListener("resize", debouncedResize);
 
     // Cleanup
     return () => {
       clearTimeout(initTimeout);
       window.removeEventListener("resize", debouncedResize);
-      ctx.kill(); // Kill GSAP context
+      ctx.revert();
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, [isLoaded]);
 
-  // Don't render until component is loaded
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden bg-transparent" ref={containerRef}>
@@ -202,14 +211,21 @@ export default function Creater() {
   );
 }
 
-// Debounce helper function
-function debounce(func: Function, wait: number) {
+// Create a more specific type for the function parameters
+type DebouncedFunction = (...args: unknown[]) => void;
+
+function debounce<T extends DebouncedFunction>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
+  
+  return function executedFunction(...args: Parameters<T>): void {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
     };
+    
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
