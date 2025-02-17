@@ -3,41 +3,11 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const slides = [
-//   Rohan Azad 
-
-// Rohan is the Co-Founder of 
-
-// MnA Studios & a Creator as well 
-
-// He also acts as an advisor at Mess N Art
-
-// Sanatan Roy
-
-// Manthan is the Co-founder of 23 Ventures
-
-// MnA Studios & a Creator as well 
-
-// He also acts as an advisor at Mess N Art
-
-// Ritik Jain
-
-// Manthan is the Co-founder of 23 Ventures
-
-// MnA Studios & a Creator as well 
-
-// He also acts as an advisor at Mess N Art
-
-// Manthan Gupta
-
-// Manthan is the Co-founder of 23 Ventures
-
-// MnA Studios & a Creator as well 
-
-// He is a General Partner at Mess n Art
   {
     title: "Rohan Azad",
     description: "Rohan is the Co-Founder of MnA Studios & a Creator as well He also acts as an advisor at Mess N Art.",
@@ -188,7 +158,7 @@ export default function Creater() {
             <div className="w-[50%] h-[80vh] rounded-2xl overflow-hidden">
               <div className="relative w-full h-full">
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/20 z-[5]" />
-                <img
+                <Image
                   src={slide.image}
                   alt={slide.title}
                   className="slide-image h-full w-full object-cover rounded-2xl"

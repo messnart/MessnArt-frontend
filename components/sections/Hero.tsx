@@ -33,11 +33,11 @@ const Hero = () => {
 
           <p className="text-xl md:text-2xl text-gray-700 leading-relaxed">
             If you always wanted to be a content creator or creator entrepreneur
-            but couldn't due to the lack of resources, funds, mentorship and guidance,
+            but couldn&apos;t due to the lack of resources, funds, mentorship and guidance,
           </p>
 
           <p className="text-2xl md:text-3xl font-semibold">
-            Don't worry, we are here for you!
+            Don&apos;t worry, we are here for you!
           </p>
 
           <div className="pt-8">
