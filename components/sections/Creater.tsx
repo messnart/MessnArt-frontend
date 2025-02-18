@@ -1,9 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
+import Image from 'next/image'
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -63,170 +63,144 @@ const slides = [
 export default function Creater() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Replace useEffect with useLayoutEffect for DOM measurements
-  useLayoutEffect(() => {
-    // Wait for DOM to be ready
-    const initTimeout = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-
-    return () => clearTimeout(initTimeout);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!isLoaded) return;
-
-    let ctx = gsap.context(() => {});
+  useEffect(() => {
+    const container = containerRef.current;
+    const slider = sliderRef.current;
     
+    if (!container || !slider) return;
+
     const setupAnimation = () => {
-      // Kill existing animations
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      gsap.killTweensOf(sliderRef.current);
-      
-      const container = containerRef.current;
-      const slider = sliderRef.current;
-      
-      if (!container || !slider) return;
 
-      // Reset any previous inline styles
-      gsap.set([container, slider], { clearProps: "all" });
-
-      const slideWidth = window.innerWidth;
+      const isMobile = window.innerWidth < 768;
+      const slidesVisible = isMobile ? 1 : 2;
+      const slideWidth = window.innerWidth / slidesVisible;
       const totalWidth = slides.length * slideWidth;
       
-      // Set initial dimensions
-      gsap.set(slider, {
-        width: totalWidth,
-        x: 0
-      });
+      slider.style.width = `${totalWidth}px`;
 
       const scrollDistance = totalWidth - window.innerWidth;
 
-      // Ensure container height is correct
-      gsap.set(container, {
-        height: scrollDistance + window.innerHeight
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          pin: true,
+          scrub: 1,
+          snap: {
+            snapTo: 1 / (slides.length - slidesVisible),
+            duration: { min: 0.2, max: 0.3 },
+            delay: 0,
+            ease: "power1.inOut"
+          },
+          end: `+=${scrollDistance}`,
+        },
       });
 
-      ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: container,
-            start: "top top",
-            end: `+=${scrollDistance}`,
-            pin: true,
-            anticipatePin: 1,
-            scrub: 1,
-            invalidateOnRefresh: true,
-            snap: {
-              snapTo: 1 / (slides.length - 1),
-              duration: { min: 0.2, max: 0.3 },
-              delay: 0,
-              ease: "power1.inOut"
-            }
-          }
-        });
+      // Set container height excluding the heading height
+      gsap.set(container, {
+        height: `${window.innerHeight * 0.8}px` // Reduced to 80% to account for heading
+      });
 
-        tl.to(slider, {
-          x: -scrollDistance,
-          ease: "none"
+      tl.to(slider, {
+        x: -scrollDistance,
+        ease: "none",
+      });
+
+      // Image scale animation
+      const images = gsap.utils.toArray<HTMLImageElement>(".slide-image");
+      images.forEach((image) => {
+        gsap.to(image, {
+          scale: 1.1,
+          scrollTrigger: {
+            trigger: image.parentElement,
+            containerAnimation: tl,
+            start: "left center",
+            end: "right center",
+            scrub: true,
+          },
         });
-      }, container);
+      });
     };
 
-    // Initial setup with a delay to ensure proper measurements
-    const initTimeout = setTimeout(setupAnimation, 500);
-
-    // Handle resize with debounce
-    const debouncedResize = debounce(() => {
-      setupAnimation();
-    }, 250);
-
-    window.addEventListener("resize", debouncedResize);
-
-    // Cleanup
+    setupAnimation();
+    window.addEventListener("resize", setupAnimation);
     return () => {
-      clearTimeout(initTimeout);
-      window.removeEventListener("resize", debouncedResize);
-      ctx.revert();
+      window.removeEventListener("resize", setupAnimation);
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
-  }, [isLoaded]);
+  }, []);
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollTrigger = ScrollTrigger.create({
+      trigger: container,
+      start: "top center",
+      end: "bottom+=100% center", // Increased end point
+      toggleActions: "play none none reverse", // Changed toggle actions
+      onEnter: () => setIsVisible(true),
+      onLeaveBack: () => setIsVisible(false),
+      onLeave: () => setIsVisible(false),
+      onEnterBack: () => setIsVisible(true),
+      pin: false, // Make sure it doesn't interfere with the slider's pin
+    });
+
+    return () => {
+      scrollTrigger.kill();
+    };
+  }, []);
 
   return (
-    <div className="overflow-hidden bg-transparent" ref={containerRef}>
-      <div className="text-center pt-4 pb-0.5">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+    <div className="relative bg-transparent min-h-screen pt-24 overflow-x-hidden" ref={containerRef}> {/* Added pt-24 for header space */}
+      <div className="top-20 z-10 bg-transparent backdrop-blur-sm py-6"> {/* Made heading sticky */}
+        <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900">
           Team & People we have collaborated with
         </h1>
       </div>
       <div
         ref={sliderRef}
-        className="flex min-h-screen items-center"
+        className="flex h-[50vh] items-center mt-4" // Added mt-4 for spacing
       >
         {slides.map((slide, index) => (
           <div
             key={index}
-            className="w-screen h-screen flex items-center justify-between px-16"
+            className="w-screen md:w-[50vw] h-full flex items-center justify-between px-8 md:px-12"
           >
             {/* Content on the left */}
-            <div className="w-[45%] p-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <div className="w-[45%] p-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {slide.title}
               </h2>
-              <p className="text-lg md:text-xl text-gray-600 mb-8">
+              <p className="text-base md:text-lg text-gray-600 mb-4">
                 {slide.description}
               </p>
             </div>
 
             {/* Image on the right */}
-            <div className="w-[50%] h-[80vh] rounded-2xl overflow-hidden">
+            <div className="w-[50%] h-[40vh] rounded-2xl overflow-hidden">
               <div className="relative w-full h-full">
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/20 z-[5]" />
                 <Image
                   src={slide.image}
                   alt={slide.title}
-                  height={500}
-                  width={500}
-                  className="slide-image h-full w-full object-cover rounded-2xl"
+                  fill
+                  className="slide-image object-cover rounded-2xl"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={index === 0}
                 />
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg text-gray-900 text-sm font-medium z-20">
-        Scroll to explore
-      </div>
+      {isVisible && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg text-gray-900 text-sm font-medium z-20">
+          Scroll to explore
+        </div>
+      )}
     </div>
   );
-}
-
-// Create a more specific type for the function parameters
-type DebouncedFunction = (...args: unknown[]) => void;
-
-function debounce<T extends DebouncedFunction>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  
-  return function executedFunction(...args: Parameters<T>): void {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
 }

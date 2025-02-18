@@ -1,25 +1,13 @@
 "use client"
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const Hero = () => {
-  // Add state to control client-side rendering
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Only render content after component mounts on client
-  if (!isMounted) {
-    return null; // or a loading state
-  }
-
   return (
     <section className="min-h-screen relative flex items-center px-4 md:px-16">
       {/* Background Gradient */}
       <div 
-        className="absolute inset-0 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent"
+        className="absolute inset-0 bg-gradient-to-b from-orange-50/90 via-orange-50/50 to-transparent overflow-x-hidden"
         style={{ maskImage: 'linear-gradient(to bottom, black 70%, transparent 100%)' }}
       />
 
