@@ -29,14 +29,14 @@ const Header = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
           <Link 
-            href="/labs" 
+            href="/culture" 
             className="text-gray-900 hover:text-gray-600 font-semibold relative group"
           >
             Culture
             <span className="absolute -bottom-1 left-0 w-0 h-2 bg-orange-400 transition-all duration-300 group-hover:w-full"></span>
           </Link>
           <Link 
-            href="/updates" 
+            href="/process" 
             className="text-gray-900 hover:text-gray-600 font-semibold relative group"
           >
             Process
