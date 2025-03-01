@@ -1,7 +1,7 @@
 /**
  * Clash Display Font Family Implementation
  */
-
+ 
 @font-face {
   font-family: 'ClashDisplay';
   src: url('/fonts/clash-display/ClashDisplay-Variable.woff2') format('woff2'),
