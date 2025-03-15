@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 
 const Mission = () => {
@@ -57,7 +58,7 @@ const Mission = () => {
           </div>
 
           {/* Right side - Content */}
-          <div className="w-full md:w-[70%]">
+          <div className="w-full md:w-[70%] z-10">
             <div className="text-gray-700 text-lg md:text-xl leading-relaxed whitespace-pre-line">
               {section.content}
             </div>

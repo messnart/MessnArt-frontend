@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 
 const Culture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -14,7 +13,6 @@ const Culture = () => {
   const sections = [
     {
       heading: "Our Ethos",
-      image: "/ethos.png",
       content: `At Mess n Art, we challenge norms, take risks, and redefine what it means to be a creator in the digital age. We are a movement built on
       ambition, curiosity, and collaboration—helping creators transform their content into sustainable businesses.
       
@@ -25,7 +23,6 @@ const Culture = () => {
     {
       heading: "We're Trailblazers",
       subheading: "Ambition & Drive",
-      image: "/trailblazers.png",
       content: [
         "Bold Vision – We set high standards, pushing beyond perceived limits.",
         "Fearless Action – We move forward despite uncertainty, always doing what's right.",
@@ -41,7 +38,6 @@ const Culture = () => {
     {
       heading: "We're Thinkers & Builders",
       subheading: "Logic & Innovation",
-      image: "/thinkers.jpg",
       content: [
         "Truth-Seeking – We separate facts from assumptions and always seek clarity.",
         "Unquenchable Curiosity – We question everything, always looking for deeper understanding.",
@@ -57,7 +53,6 @@ const Culture = () => {
     {
       heading: "We're Autonomous & Open",
       subheading: "Freedom & Transparency",
-      image: "/autonomous.png",
       content: [
         "Diverse Perspectives – We embrace different ideas and challenge our own biases.",
         "Self-Governance – We operate with trust, giving people full autonomy over their work.",
@@ -73,7 +68,6 @@ const Culture = () => {
     {
       heading: "We're a Collective",
       subheading: "Collaboration & Community",
-      image: "/collective.jpg",
       content: [
         "Give Without Expecting – We contribute generously, knowing that value comes full circle.",
         "Be Real, Be You – We show up authentically, without pretense.",
@@ -88,7 +82,6 @@ const Culture = () => {
     },
     {
       heading: "Why We Exist",
-      image: "/why.png",
       content: ["Marketing has been democratized – anyone with the right strategy can become a creator. The barriers to entry are gone, but the real challenge is sustaining success. Most creators have a short shelf life—typically 4-5 years.",
       "We saw an opportunity – what if we could help creators build real businesses that outlive trends?",
       "That's what Mess n Art is all about – guiding, providing resources, and proving that you can be both a creator and an entrepreneur.",],
@@ -96,7 +89,6 @@ const Culture = () => {
     },
     {
       heading: "We don't wait for permission. We take the leap.",
-      image: "/image.png",
       content: `Join us if you're ready to defy convention, embrace uncertainty, and build something people call crazy—because the boldest ideas are the ones that change the world.
   In creator-led brands, consistency is everything—and we're here to make sure you never stop.`,
       isDark: true
@@ -153,21 +145,14 @@ const Culture = () => {
               sectionRefs.current[index] = el;
             }}
           >
-            {/* Image Section with scroll animations */}
+            {/* Section with gradient backgrounds instead of images */}
             <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-              <div className="relative h-full w-full">
-                <Image
-                  src={section.image}
-                  alt={section.heading}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                />
+              <div className={`relative h-full w-full`}>
                 <div 
                   className={`absolute inset-0 bg-gradient-to-b ${
                     section.isDark 
                       ? 'from-transparent via-black/40 to-black' 
-                      : 'from-transparent via-white/40 to-white'
+                      : 'from-black via-black/40 to-transparent'
                   }`}
                 />
                 
