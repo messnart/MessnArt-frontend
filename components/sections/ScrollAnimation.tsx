@@ -17,80 +17,99 @@ const ScrollAnimation = () => {
 
     if (!container || !text || !logo) return;
 
-    // Main timeline
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: container,
-        start: "top top",
-        end: "+=200%",
-        scrub: 1,
-        pin: true,
-        anticipatePin: 1,
-        markers: false,
-        onEnter: () => {
-          gsap.set([text, logo], { visibility: 'visible' });
+    // Function to handle animation setup
+    const setupAnimation = () => {
+      // Clear existing ScrollTriggers
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+
+      // Main timeline
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: "top top",
+          end: "+=200%",
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+          markers: false,
+          onEnter: () => {
+            gsap.set([text, logo], { visibility: 'visible' });
+          }
         }
-      }
-    });
+      });
 
-    // Initial state
-    gsap.set([text, logo], { 
-      x: "100vw",
-      visibility: 'hidden'
-    });
+      // Initial state
+      gsap.set([text, logo], { 
+        x: "100vw",
+        visibility: 'hidden'
+      });
 
-    // Animation sequence
-    tl
-      // Move text and logo from right to left
-      .to([text, logo], {
-        x: "-100vw",
-        duration: 1.5,
-        ease: "power1.inOut",
-      })
-      // Keep logo in center
-      .to(logo, {
-        x: "0",
-        duration: 0.5,
-        ease: "power2.out",
-      }, "-=0.5")
-      // Scale up logo more significantly
-      .to(logo, {
-        scale: 2.2, // Increased scale for more dramatic effect
-        duration: 1,
-        ease: "power2.inOut",
-      })
-      // Change theme
-      .to("body", { 
-        backgroundColor: "#1a1a1a",
-        color: "#ffffff",
-        duration: 0.5,
-        ease: "none",
-      })
-      .to(".header-content", {
-        color: "#ffffff",
-        duration: 0.5,
-        ease: "none",
-      }, "<")
-      .to(".header-content > div:first-child", {
-        opacity: 0,
-        duration: 0.5,
-        ease: "none",
-      }, "<")
-      .to(".header-content a", {
-        color: "#ffffff",
-        duration: 0.5,
-        ease: "none",
-      }, "<")
-      // Fade out logo
-      .to(logo, {
-        opacity: 0,
-        scale: 2.5, // Continue scaling while fading out
-        duration: 0.5,
-        ease: "power2.in",
-      }, "+=0.2"); // Small delay after theme change
+      // Responsive scale values
+      const logoScale = window.innerWidth < 768 ? 1.5 : 2.2;
+      const finalLogoScale = window.innerWidth < 768 ? 1.8 : 2.5;
+
+      // Animation sequence
+      tl
+        .to([text, logo], {
+          x: "-100vw",
+          duration: 1.5,
+          ease: "power1.inOut",
+        })
+        .to(logo, {
+          x: "0",
+          duration: 0.5,
+          ease: "power2.out",
+        }, "-=0.5")
+        .to(logo, {
+          scale: logoScale,
+          duration: 1,
+          ease: "power2.inOut",
+        })
+        .to("body", { 
+          backgroundColor: "#1a1a1a",
+          color: "#ffffff",
+          duration: 0.5,
+          ease: "none",
+        })
+        .to(".header-content", {
+          color: "#ffffff",
+          duration: 0.5,
+          ease: "none",
+        }, "<")
+        .to(".header-content > div:first-child", {
+          opacity: 0,
+          duration: 0.5,
+          ease: "none",
+        }, "<")
+        .to(".header-content a", {
+          color: "#ffffff",
+          duration: 0.5,
+          ease: "none",
+        }, "<")
+        .to(logo, {
+          opacity: 0,
+          scale: finalLogoScale,
+          duration: 0.5,
+          ease: "power2.in",
+        }, "+=0.2");
+    };
+
+    // Initial setup
+    setupAnimation();
+
+    // Handle resize
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      // Debounce the resize handler
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(setupAnimation, 250);
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -99,13 +118,16 @@ const ScrollAnimation = () => {
       ref={containerRef} 
       className="min-h-screen w-full flex items-center justify-center overflow-hidden relative bg-transparent"
     >
-      <div className="flex items-center gap-8 absolute">
-        <div ref={textRef} className="text-9xl font-bold whitespace-nowrap">
+      <div className="flex items-center gap-4 md:gap-8 absolute">
+        <div 
+          ref={textRef} 
+          className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl font-bold whitespace-nowrap"
+        >
           This is Mess N Art
         </div>
         <div ref={logoRef} className="relative">
           <svg 
-            className="w-24 h-24" 
+            className="w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24" 
             viewBox="0 0 24 24" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg"
